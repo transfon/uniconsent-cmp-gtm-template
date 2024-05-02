@@ -231,7 +231,7 @@ const main = (data) => {
 
     if (data.enableConsentMode !== false) {
 
-        if (data.defaultSettings.length > 0) {
+        if (data.defaultSettings && data.defaultSettings.length > 0) {
             data.defaultSettings.map((settings) => {
                 const defaultData = parseCommandData(settings);
                 setDefaultConsentState(defaultData);
@@ -742,6 +742,10 @@ scenarios: []
 
 
 ___NOTES___
+
+UniConsent CMP Tag 2.1
+
+* Improve Google Consent Mode V2
 
 UniConsent CMP Tag 2.0
 
