@@ -1,6 +1,8 @@
 homepage: "https://www.uniconsent.com"
 documentation: "https://www.uniconsent.com/docs"
 versions:
+  - sha: 7d50961ff14915b7d6a21608cddb25d3f8e17995
+    changeNotes: Improve Consent Mode V2 support
   - sha: b0390a8b689d1f407b903ef6cd0bafdd7737402d
     changeNotes: Added Consent Mode V2 support
   - sha: 8bce9220e04a91f7f1a524baf4fac323980c05b6
