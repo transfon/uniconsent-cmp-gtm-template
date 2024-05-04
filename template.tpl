@@ -164,13 +164,12 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const injectScript = require('injectScript');
 const queryPermission = require('queryPermission');
+const localStorage = require('localStorage');
+const JSON = require('JSON');
 
-// The first two lines are optional, use if you want to enable logging
 const log = require('logToConsole');
 log('data =', data);
 const setDefaultConsentState = require('setDefaultConsentState');
-const updateConsentState = require('updateConsentState');
-const callInWindow = require('callInWindow');
 const gtagSet = require('gtagSet');
 const license = data.license;
 
@@ -210,44 +209,30 @@ const parseCommandData = (settings) => {
     }
     return commandData;
 };
-/**
- * Called when consent changes. Assumes that consent object contains keys which
- * directly correspond to Google consent types.
- */
-const onUserConsent = (consent) => {
-    const consentModeStates = {
-        ad_storage: consent.adConsentGranted ? 'granted' : 'denied',
-        ad_user_data: consent.adUserDataConsentGranted ? 'granted' : 'denied',
-        ad_personalization: consent.adPersonalizationConsentGranted ? 'granted' : 'denied',
-        analytics_storage: consent.analyticsConsentGranted ? 'granted' : 'denied',
-        functionality_storage: consent.functionalityConsentGranted ? 'granted' : 'denied',
-        personalization_storage: consent.personalizationConsentGranted ? 'granted' : 'denied',
-        security_storage: consent.securityConsentGranted ? 'granted' : 'denied',
-    };
-    updateConsentState(consentModeStates);
-};
 
 const main = (data) => {
 
     if (data.enableConsentMode !== false) {
-
-        if (data.defaultSettings && data.defaultSettings.length > 0) {
-            data.defaultSettings.map((settings) => {
-                const defaultData = parseCommandData(settings);
-                setDefaultConsentState(defaultData);
-            });
+        if (queryPermission('access_local_storage', 'read', '__unic_consent_mode') && localStorage.getItem('__unic_consent_mode') !== null) {
+            setDefaultConsentState(JSON.parse(localStorage.getItem('__unic_consent_mode')));
         } else {
-            setDefaultConsentState({
-                ad_storage: 'denied',
-                ad_user_data: 'denied',
-                ad_personalization: 'denied',
-                analytics_storage: 'denied',
-                functionality_storage: 'denied',
-                personalization_storage: 'denied',
-                security_storage: 'granted'
-            });
+            if (data.defaultSettings && data.defaultSettings.length > 0) {
+                data.defaultSettings.map((settings) => {
+                    const defaultData = parseCommandData(settings);
+                    setDefaultConsentState(defaultData);
+                });
+            } else {
+                setDefaultConsentState({
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    analytics_storage: 'denied',
+                    functionality_storage: 'denied',
+                    personalization_storage: 'denied',
+                    security_storage: 'granted'
+                });
+            }
         }
-
     }
 
     if (queryPermission('inject_script', scriptUrl)) {
@@ -256,8 +241,6 @@ const main = (data) => {
     } else {
         data.gtmOnFailure();
     }
-
-    // callInWindow('updateGTMConsent', onUserConsent);
 };
 main(data);
 
@@ -280,67 +263,6 @@ ___WEB_PERMISSIONS___
           }
         }
       ]
-    },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_globals",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "keys",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 3,
-                "mapKey": [
-                  {
-                    "type": 1,
-                    "string": "key"
-                  },
-                  {
-                    "type": 1,
-                    "string": "read"
-                  },
-                  {
-                    "type": 1,
-                    "string": "write"
-                  },
-                  {
-                    "type": 1,
-                    "string": "execute"
-                  }
-                ],
-                "mapValue": [
-                  {
-                    "type": 1,
-                    "string": "updateGTMConsent"
-                  },
-                  {
-                    "type": 8,
-                    "boolean": true
-                  },
-                  {
-                    "type": 8,
-                    "boolean": false
-                  },
-                  {
-                    "type": 8,
-                    "boolean": true
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
     },
     "isRequired": true
   },
@@ -732,6 +654,59 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_local_storage",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "keys",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "__unic_consent_mode"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
   }
 ]
 
@@ -742,6 +717,10 @@ scenarios: []
 
 
 ___NOTES___
+
+UniConsent CMP Tag 2.2
+
+* Improve Google Consent Mode V2 default status
 
 UniConsent CMP Tag 2.1
 
