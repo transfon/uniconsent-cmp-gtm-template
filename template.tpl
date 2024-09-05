@@ -164,7 +164,6 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const injectScript = require('injectScript');
 const queryPermission = require('queryPermission');
-const localStorage = require('localStorage');
 const JSON = require('JSON');
 
 const log = require('logToConsole');
@@ -201,7 +200,7 @@ const parseCommandData = (settings) => {
         'functionality_storage': settings.functionalityStorage ? 'granted' : 'denied',
         'personalization_storage': settings.personalizationStorage ? 'granted' : 'denied',
         'security_storage': settings.securityStorage ? 'granted' : 'denied',
-        'wait_for_update': 500
+        'wait_for_update': 3000
     };
     const regions = splitInput(settings.region);
     if (regions.length > 0) {
@@ -213,25 +212,22 @@ const parseCommandData = (settings) => {
 const main = (data) => {
 
     if (data.enableConsentMode !== false) {
-        if (queryPermission('access_local_storage', 'read', '__unic_consent_mode') && localStorage.getItem('__unic_consent_mode') !== null) {
-            setDefaultConsentState(JSON.parse(localStorage.getItem('__unic_consent_mode')));
+        if (data.defaultSettings && data.defaultSettings.length > 0) {
+            data.defaultSettings.map((settings) => {
+                const defaultData = parseCommandData(settings);
+                setDefaultConsentState(defaultData);
+            });
         } else {
-            if (data.defaultSettings && data.defaultSettings.length > 0) {
-                data.defaultSettings.map((settings) => {
-                    const defaultData = parseCommandData(settings);
-                    setDefaultConsentState(defaultData);
-                });
-            } else {
-                setDefaultConsentState({
-                    ad_storage: 'denied',
-                    ad_user_data: 'denied',
-                    ad_personalization: 'denied',
-                    analytics_storage: 'denied',
-                    functionality_storage: 'denied',
-                    personalization_storage: 'denied',
-                    security_storage: 'granted'
-                });
-            }
+            setDefaultConsentState({
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                analytics_storage: 'denied',
+                functionality_storage: 'denied',
+                personalization_storage: 'denied',
+                security_storage: 'granted',
+                wait_for_update: 3000
+            });
         }
     }
 
@@ -654,62 +650,8 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "access_local_storage",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "keys",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 3,
-                "mapKey": [
-                  {
-                    "type": 1,
-                    "string": "key"
-                  },
-                  {
-                    "type": 1,
-                    "string": "read"
-                  },
-                  {
-                    "type": 1,
-                    "string": "write"
-                  }
-                ],
-                "mapValue": [
-                  {
-                    "type": 1,
-                    "string": "__unic_consent_mode"
-                  },
-                  {
-                    "type": 8,
-                    "boolean": true
-                  },
-                  {
-                    "type": 8,
-                    "boolean": false
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": true
   }
 ]
-
 
 ___TESTS___
 
@@ -717,6 +659,10 @@ scenarios: []
 
 
 ___NOTES___
+
+UniConsent CMP Tag 2.3
+
+* Improve Google Consent Mode V2 default status
 
 UniConsent CMP Tag 2.2
 
