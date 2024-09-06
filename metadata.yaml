@@ -1,6 +1,8 @@
 homepage: "https://www.uniconsent.com"
 documentation: "https://www.uniconsent.com/docs"
 versions:
+  - sha: 9e228cc231a221527b0ea01d5c8e4498b3ebeacc
+    changeNotes: Improve Consent set
   - sha: f066481747ee5667b3c6293d65afb4663944f647
     changeNotes: Improve Google Consent Mode V2 default status
   - sha: 8d96a1d35eb17c50c0debcb013a3bb0ce393533a
