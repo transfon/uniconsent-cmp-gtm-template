@@ -164,11 +164,13 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const injectScript = require('injectScript');
 const queryPermission = require('queryPermission');
+const localStorage = require('localStorage');
 const JSON = require('JSON');
 
 const log = require('logToConsole');
 log('data =', data);
 const setDefaultConsentState = require('setDefaultConsentState');
+const updateConsentState = require('updateConsentState');
 const gtagSet = require('gtagSet');
 const license = data.license;
 
@@ -200,7 +202,7 @@ const parseCommandData = (settings) => {
         'functionality_storage': settings.functionalityStorage ? 'granted' : 'denied',
         'personalization_storage': settings.personalizationStorage ? 'granted' : 'denied',
         'security_storage': settings.securityStorage ? 'granted' : 'denied',
-        'wait_for_update': 3000
+        'wait_for_update': 1000
     };
     const regions = splitInput(settings.region);
     if (regions.length > 0) {
@@ -226,8 +228,11 @@ const main = (data) => {
                 functionality_storage: 'denied',
                 personalization_storage: 'denied',
                 security_storage: 'granted',
-                wait_for_update: 3000
+                wait_for_update: 1000
             });
+        }
+        if (queryPermission('access_local_storage', 'read', '__unic_consent_mode') && localStorage.getItem('__unic_consent_mode') !== null) {
+            updateConsentState(JSON.parse(localStorage.getItem('__unic_consent_mode')));
         }
     }
 
@@ -650,8 +655,62 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_local_storage",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "keys",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "__unic_consent_mode"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
   }
 ]
+
 
 ___TESTS___
 
@@ -659,6 +718,10 @@ scenarios: []
 
 
 ___NOTES___
+
+UniConsent CMP Tag 2.4
+
+* Improve consent set
 
 UniConsent CMP Tag 2.3
 
